@@ -15,13 +15,6 @@ public class PlayerSpawner : NetworkBehaviour
         {
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
         }
-
-        if (IsOwner)
-        {
-            Camera.main.transform.SetParent(this.transform);
-            Camera.main.transform.localPosition = new Vector3(0, 5, -10);
-            Camera.main.transform.localRotation = Quaternion.identity;
-        }
     }
 
     private void OnClientConnected(ulong clientId)

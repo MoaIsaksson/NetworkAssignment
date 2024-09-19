@@ -1,5 +1,6 @@
 using Unity.Netcode;
 using UnityEngine;
+using Cinemachine;
 
 public class Player : NetworkBehaviour
 {
@@ -9,11 +10,21 @@ public class Player : NetworkBehaviour
 
     private bool isGrounded;
 
+    [SerializeField] private CinemachineVirtualCamera vc;
+    [SerializeField] private AudioListener audioListener;
+
     public override void OnNetworkSpawn()
     {
-        if (!IsOwner) return;
-
-        rb = GetComponent<Rigidbody>();
+        if (IsOwner)
+        {
+            rb = GetComponent<Rigidbody>();
+            audioListener.enabled = true;
+            vc.Priority = 2;
+        }
+        else
+        {
+            vc.Priority = 0;
+        }
     }
 
     void Update()
@@ -26,19 +37,11 @@ public class Player : NetworkBehaviour
     private void OnMove()
     {
         float moveInput = Input.GetAxis("Horizontal");
-        Debug.Log($"Move input: {moveInput}");
-
-        if (moveInput != 0)
-        {
-            Debug.Log("player is moving");
-        }
 
         rb.velocity = new Vector3(moveInput * speed, rb.velocity.y);
 
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
-            Debug.Log("player is trying to jump");
-
             rb.velocity = new Vector3(rb.velocity.x, jumpForce);
             isGrounded = false;
             SubmitJumpRequestServerRpc();

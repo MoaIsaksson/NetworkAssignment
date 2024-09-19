@@ -4,41 +4,55 @@ using System.Collections.Generic;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.UI;
+using TMPro;
 
 public class ChatManager : NetworkBehaviour
 {
-    [SerializeField] private TMP_InputField chatInputField;
-    [SerializeField] private TextMeshProUGUI chatDisplay;
+    public static ChatManager Singleton;
 
+    [SerializeField] ChatMessage ChatMessagePrefab;
+    [SerializeField] CanvasGroup ChatContent;
+    [SerializeField] TMP_InputField ChatInput;
 
-    private void Start()
+    public String PlayerName;
+
+    private void Awake()
     {
-        chatInputField.onEndEdit.AddListener(OnSendChatMessage);
+        ChatManager.Singleton = this;
     }
 
-    private void OnDestroy()
+    private void Update()
     {
-        chatInputField.onEndEdit.RemoveListener(OnSendChatMessage);
+        if (Input.GetKeyDown(KeyCode.Return))
+        {
+            SendChatMessage(ChatInput.text, PlayerName);
+            ChatInput.text = "";
+        }
     }
 
-    public void OnSendChatMessage(string message)
+    public void SendChatMessage(string Message, string FromWho = null)
     {
-        if (!IsOwner || string.IsNullOrWhiteSpace(message)) return;
+        if (string.IsNullOrWhiteSpace(Message)) return;
 
-        SendChatMessageServerRpc(message);
-        chatInputField.text = "";
+        string S = FromWho + " > " + Message;
+        SendChatMessageServerRpc(S);
     }
 
-    [ServerRpc]
-    private void SendChatMessageServerRpc(string message, ServerRpcParams rpcParams = default)
+    void AddMessage(string Msg)
     {
-        DisplayChatMessageClientRpc(message);
+        ChatMessage CM = Instantiate(ChatMessagePrefab, ChatContent.transform);
+        CM.SetText(Msg);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void SendChatMessageServerRpc(string message)
+    {
+        RecieveChatMessageClientRpc(message);
     }
 
     [ClientRpc]
-    private void DisplayChatMessageClientRpc(string message)
+    private void RecieveChatMessageClientRpc(string message)
     {
-      chatDisplay.text += "\n" + message;
+       ChatManager.Singleton.AddMessage(message);
     }
 }

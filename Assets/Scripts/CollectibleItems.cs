@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -13,23 +11,31 @@ public class CollectibleItems : NetworkBehaviour
 
         if (collision.CompareTag("Player"))
         {
-            ulong clientId = gameObject.GetComponent<NetworkObject>().OwnerClientId;
-            CollectServerRpc(clientId);
+            ulong ClientId = collision.GetComponent<NetworkObject>().OwnerClientId;
+            CollectClientRpc(ClientId);
         }
     }
 
-    [ServerRpc]
-    private void CollectServerRpc(ulong clientId)
+
+    [Rpc(SendTo.Everyone)]
+    private void CollectClientRpc(ulong ClientId)
     {
         if (isCollected) return;
+
         isCollected = true;
         ScoreManager scoreManager = FindObjectOfType<ScoreManager>();
 
         if (scoreManager != null)
         {
-            scoreManager.AddScore(5);
+            scoreManager.AddScore(5, ClientId);
         }
 
-        Destroy(gameObject);
+        DestroyCollectibleServerRpc();
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void DestroyCollectibleServerRpc()
+    {
+       Destroy(gameObject);
     }
 }

@@ -14,8 +14,18 @@ public class NetworkUIManager : MonoBehaviour
 
     private void Start()
     {
-        hostbutton.onClick.AddListener(OnHostButtonClicked);
-        clientbutton.onClick.AddListener(OnClientButtonClicked);
+        hostbutton.onClick.AddListener(() =>
+        {
+            NetworkManager.Singleton.StartHost();
+            canvas1.SetActive(false);
+        });
+        clientbutton.onClick.AddListener(() =>
+        {
+            NetworkManager.Singleton.StartClient();
+            canvas1.SetActive(false);
+        });
+
+
         quitbutton.onClick.AddListener(OnQuitButtonClicked);
     }
 
@@ -26,7 +36,8 @@ public class NetworkUIManager : MonoBehaviour
             canvas1.SetActive(true);
         }
     }
-    private void OnHostButtonClicked()
+
+   /* private void OnHostButtonClicked()
     {
         NetworkManager.Singleton.StartHost();
         canvas1.SetActive(false);
@@ -39,6 +50,8 @@ public class NetworkUIManager : MonoBehaviour
         canvas1.SetActive(false); 
         Debug.Log("Client started");
     }
+   
+    */
 
     private void OnQuitButtonClicked()
     {
